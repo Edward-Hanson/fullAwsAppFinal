@@ -20,11 +20,13 @@ public class ImageMetadata {
     private Long id;
     private String filename;
     private String url;
+    private String description;
     private LocalDateTime uploadTime;
 
-    public ImageMetadata(String filename, String url) {
+    public ImageMetadata(String filename, String url, String description) {
         this.filename = filename;
         this.url = url;
+        this.description = description;
         this.uploadTime = LocalDateTime.now();
     }
 }

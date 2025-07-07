@@ -12,27 +12,25 @@
         .animate-zoom {
             animation: zoomIn 0.3s ease-out forwards;
         }
-         .error-banner {
-             background: linear-gradient(to right, #ffdddd, #ffeaea);
-             color: #b10000;
-             border: 1px solid #ff5f5f;
-             border-left: 6px solid #d10000;
-             padding: 15px 20px;
-             margin: 20px auto;
-             border-radius: 6px;
-             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-             font-size: 15px;
-             max-width: 700px;
-             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-             position: relative;
-         }
-
+        .error-banner {
+            background: linear-gradient(to right, #ffdddd, #ffeaea);
+            color: #b10000;
+            border: 1px solid #ff5f5f;
+            border-left: 6px solid #d10000;
+            padding: 15px 20px;
+            margin: 20px auto;
+            border-radius: 6px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 15px;
+            max-width: 700px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            position: relative;
+        }
         .error-banner::before {
             content: "⚠️ ";
             font-size: 18px;
             margin-right: 5px;
         }
-
         .error-banner-close {
             position: absolute;
             top: 8px;
@@ -41,29 +39,22 @@
             cursor: pointer;
             font-weight: bold;
         }
+        .truncate-description {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
+<body class="bg-gradient-to-br from-gray-50 to-blue-100 min-h-screen relative">
 <div th:if="${error}" class="error-banner">
     <span th:text="${error}">An unexpected error occurred</span>
     <span class="error-banner-close" onclick="this.parentElement.style.display='none';">&times;</span>
 </div>
-<body class="bg-gradient-to-br from-gray-50 to-blue-100 min-h-screen relative">
-<div class="max-w-7xl mx-auto p-6">
-    <!-- Header -->
-    <h1 class="text-5xl font-bold text-center text-blue-700 mb-10 drop-shadow-xl">S3 Image HUB</h1>
-
-    <!-- Upload Form -->
-    <div class="bg-white rounded-xl shadow-lg p-6 mb-10">
-        <form method="post" enctype="multipart/form-data" action="/upload" class="flex flex-col md:flex-row items-center gap-4">
-            <input type="file" name="files" accept="image/*" multiple required
-                   onchange="validateFiles(this.files)"
-                   class="flex-1 p-3 border border-blue-400 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-300"/>
-            <button type="submit"
-                    class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 hover:scale-105 transition duration-300">
-                Upload Images
-            </button>
-        </form>
-    </div>
+<div class="max-w-4xl mx-auto p-6">
+    <h1 class="text-4xl font-bold text-center text-blue-700 mb-10 drop-shadow-xl">Image HUB</h1>
 
     <!-- Image Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -74,75 +65,62 @@
                  th:attr="data-url=@{'/images/' + ${img.id}}, data-filename=${img.filename}"
                  class="w-full h-60 object-cover rounded-lg border border-gray-300 hover:opacity-90 transition duration-200 cursor-pointer preview-trigger"/>
 
-            <div class="mt-3 text-sm text-gray-600 truncate">
-                <span th:text="${img.filename}">Filename</span>
+            <div class="mt-2 text-sm text-gray-800 font-semibold truncate" th:text="${img.filename}">Filename</div>
+
+            <div class="mt-1 text-xs text-gray-600 italic truncate-description" th:id="'desc-' + ${img.id}">
+                <span class="font-semibold text-gray-700">Description:</span> <span th:text="${img.description}">Description</span>
+                <span th:if="${#strings.length(img.description) > 80}" class="text-blue-600 cursor-pointer underline ml-1" onclick="toggleDescription(this, [[${img.id}]])">see more...</span>
             </div>
 
             <div class="mt-4 flex justify-end items-center gap-4">
                 <a th:href="@{'/download/' + ${img.id}}"
-                   class="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 font-medium transition"
-                   download>
+                   class="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 font-medium transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"/>
                     </svg>
                     Download
                 </a>
-
-                <button type="button"
-                        th:attr="data-id=${img.id}, data-name=${img.filename}"
-                        class="flex items-center gap-1 text-sm text-red-600 hover:text-red-800 font-medium transition confirm-delete">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-1-2h-4m2-2v2"/>
-                    </svg>
-                    Delete
-                </button>
+                <form th:action="@{'/delete/' + ${img.id}}" method="post" class="inline">
+                    <input type="hidden" name="_method" value="delete"/>
+                    <button type="submit"
+                            class="flex items-center gap-1 text-sm text-red-600 hover:text-red-800 font-medium transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-1-2h-4m2-2v2"/>
+                        </svg>
+                        Delete
+                    </button>
+                </form>
             </div>
-
         </div>
     </div>
-
-    <!-- Pagination -->
-    <div th:if="${images.totalPages > 1}" class="flex justify-center mt-12 flex-wrap gap-2">
-        <a th:if="${images.hasPrevious()}" th:href="@{'/?page=' + ${images.number - 1}}"
-           class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition">⟨ Prev</a>
-
-        <a th:each="i : ${#numbers.sequence(0, images.totalPages - 1)}"
-           th:href="@{'/?page=' + ${i}}"
-           th:classappend="${i == images.number} ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'"
-           class="px-4 py-2 rounded hover:bg-blue-500 hover:text-white transition"
-           th:text="${i + 1}">1</a>
-
-        <a th:if="${images.hasNext()}" th:href="@{'/?page=' + ${images.number + 1}}"
-           class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition">Next ⟩</a>
-    </div>
 </div>
 
-<!-- Preview Modal -->
-<div id="previewModal" class="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm hidden items-center justify-center z-50">
-    <div class="relative bg-white rounded-lg p-6 shadow-2xl max-w-4xl w-full animate-zoom">
-        <img id="previewImage" src="" alt="Preview" class="max-h-[75vh] w-auto mx-auto rounded-md shadow-lg">
-        <div id="previewFilename" class="text-center mt-4 text-gray-800 font-semibold text-lg truncate px-4"></div>
-        <button onclick="hidePreview()"
-                class="absolute top-3 right-3 text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-full shadow-lg">
-            ✕
-        </button>
-    </div>
-</div>
-<!-- Delete Confirmation Modal -->
-<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
-    <div class="bg-white p-6 rounded-lg shadow-2xl max-w-sm w-full animate-zoom text-center">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">Confirm Deletion</h2>
-        <p class="text-gray-600 mb-4">Are you sure you want to delete <span id="deleteFilename" class="font-semibold text-red-500"></span>?</p>
-        <form id="deleteForm" method="post">
-            <input type="hidden" name="_method" value="delete"/>
-            <div class="flex justify-center gap-4">
-                <button type="button" onclick="hideDeleteModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded">
-                    Cancel
-                </button>
-                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded">
-                    Delete
+<!-- Floating Upload Button -->
+<button onclick="document.getElementById('uploadModal').classList.remove('hidden')"
+        class="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-xl text-xl">+</button>
+
+<!-- Upload Modal -->
+<div id="uploadModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md animate-zoom relative">
+        <button class="absolute top-2 right-2 text-red-600 text-xl" onclick="document.getElementById('uploadModal').classList.add('hidden')">&times;</button>
+        <h2 class="text-xl font-semibold text-gray-700 mb-4">Upload New Image</h2>
+        <form method="post" enctype="multipart/form-data" action="/upload" class="space-y-4">
+            <div>
+                <label class="block text-gray-700 font-medium mb-1">Select Image (Max 4MB)</label>
+                <input type="file" name="file" accept="image/*" required onchange="validateFiles(this.files)"
+                       class="w-full p-3 border border-blue-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"/>
+            </div>
+            <div>
+                <label class="block text-gray-700 font-medium mb-1">Image Description <span class="text-red-500">*</span></label>
+                <input type="text" name="description" placeholder="Enter image description" required
+                       class="w-full p-3 border border-blue-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"/>
+            </div>
+            <div class="flex justify-end">
+                <button type="submit"
+                        class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 hover:scale-105 transition duration-300">
+                    Upload Image
                 </button>
             </div>
         </form>
@@ -151,72 +129,13 @@
 
 <!-- JavaScript -->
 <script>
-    const modal = document.getElementById('previewModal');
-    const imgTag = document.getElementById('previewImage');
-    const filenameTag = document.getElementById('previewFilename');
-
-    const deleteModal = document.getElementById('deleteModal');
-    const deleteFilename = document.getElementById('deleteFilename');
-    const deleteForm = document.getElementById('deleteForm');
-
-    document.querySelectorAll('.confirm-delete').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.getAttribute('data-id');
-            const name = btn.getAttribute('data-name');
-            deleteForm.setAttribute('action', `/delete/${id}`);
-            deleteFilename.textContent = name;
-            deleteModal.classList.remove('hidden');
-            deleteModal.classList.add('flex');
-        });
-    });
-
-    function hideDeleteModal() {
-        deleteModal.classList.remove('flex');
-        deleteModal.classList.add('hidden');
-        deleteForm.setAttribute('action', '');
-        deleteFilename.textContent = '';
-    }
-
-    deleteModal.addEventListener('click', (e) => {
-        if (e.target === deleteModal) hideDeleteModal();
-    });
-
-    function showPreview(imageUrl, filename) {
-        imgTag.src = imageUrl;
-        filenameTag.innerText = filename;
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    }
-
-    function hidePreview() {
-        modal.classList.remove('flex');
-        modal.classList.add('hidden');
-        imgTag.src = "";
-        filenameTag.innerText = "";
-    }
-
-    document.querySelectorAll('.preview-trigger').forEach(img => {
-        img.addEventListener('click', () => {
-            const url = img.getAttribute('data-url');
-            const filename = img.getAttribute('data-filename');
-            showPreview(url, filename);
-        });
-    });
-
-    document.addEventListener('keydown', function (event) {
-        if (event.key === "Escape") {
-            hidePreview();
-        }
-    });
-
-    modal.addEventListener('click', function (event) {
-        if (event.target === modal) {
-            hidePreview();
-        }
-    });
-
     function validateFiles(files) {
         const MAX_MB = 4;
+        if (files.length > 1) {
+            alert("You can upload only one image at a time.");
+            document.querySelector('input[type="file"]').value = '';
+            return false;
+        }
         for (let file of files) {
             if (file.size > MAX_MB * 1024 * 1024) {
                 alert(`❌ File "${file.name}" exceeds the 4MB size limit.`);
@@ -225,6 +144,12 @@
             }
         }
         return true;
+    }
+
+    function toggleDescription(el, id) {
+        const desc = document.getElementById('desc-' + id);
+        desc.classList.toggle('truncate-description');
+        el.innerText = desc.classList.contains('truncate-description') ? 'see more...' : 'see less';
     }
 </script>
 </body>

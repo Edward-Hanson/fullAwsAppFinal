@@ -34,23 +34,22 @@ public class ImageService {
     @Value("${aws.s3.bucket}")
     private String bucketName;
 
-    public void uploadFile(MultipartFile[] files) throws IOException {
+    public void uploadFile(MultipartFile file, String description) throws IOException {
         List<ImageMetadata> metadataList = new ArrayList<>();
 
-        for (MultipartFile file : files) {
-            String filename = UUID.randomUUID() + "-" + file.getOriginalFilename();
+        String filename = UUID.randomUUID() + "-" + file.getOriginalFilename();
 
-            PutObjectRequest request = PutObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(filename)
-                    .contentType(file.getContentType())
-                    .build();
+        PutObjectRequest request = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(filename)
+                .contentType(file.getContentType())
+                .build();
 
-            s3Client.putObject(request, RequestBody.fromBytes(file.getBytes()));
+        s3Client.putObject(request, RequestBody.fromBytes(file.getBytes()));
 
-            String url = s3Client.utilities().getUrl(GetUrlRequest.builder().bucket(bucketName).key(filename).build()).toString();
-            metadataList.add(new ImageMetadata(filename, url));
-        }
+        String url = s3Client.utilities().getUrl(GetUrlRequest.builder().bucket(bucketName).key(filename).build()).toString();
+        metadataList.add(new ImageMetadata(filename, url, description));
+
         imageRepo.saveAll(metadataList);
     }
 

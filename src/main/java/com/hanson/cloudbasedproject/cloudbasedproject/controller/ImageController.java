@@ -30,8 +30,8 @@ public class ImageController {
     }
 
     @PostMapping("/upload")
-    public String upload(@RequestParam("files") @NotNull MultipartFile[] files) throws IOException {
-        imageService.uploadFile(files);
+    public String upload(@RequestParam("file") @NotNull MultipartFile file, String description) throws IOException {
+        imageService.uploadFile(file, description);
         return "redirect:/";
     }
 
