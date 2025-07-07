@@ -3,14 +3,9 @@ spring:
      name: cloudbasedproject
 
   datasource:
-    #url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:cloudbasedproject}
-    #username: ${DB_USERNAME}
-    #password: ${DB_PASSWORD}
-
-    url: jdbc:postgresql://localhost:5432/projects
-    username: postgres
-    password: Eddy2357
-
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:cloudbasedproject}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
