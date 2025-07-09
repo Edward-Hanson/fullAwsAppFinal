@@ -36,7 +36,7 @@ public class ImageService {
 
     public void uploadFile(MultipartFile file, String description) throws IOException {
         List<ImageMetadata> metadataList = new ArrayList<>();
-
+        try{
         String filename = UUID.randomUUID() + "-" + file.getOriginalFilename();
 
         PutObjectRequest request = PutObjectRequest.builder()
@@ -51,6 +51,11 @@ public class ImageService {
         metadataList.add(new ImageMetadata(filename, url, description));
 
         imageRepo.saveAll(metadataList);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+        }
     }
 
     public Page<?> home(int page){
