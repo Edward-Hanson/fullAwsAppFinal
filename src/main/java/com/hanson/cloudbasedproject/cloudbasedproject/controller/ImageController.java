@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 
@@ -30,7 +31,7 @@ public class ImageController {
     }
 
     @PostMapping("/upload")
-    public String upload(@RequestParam("file") @NotNull MultipartFile file, String description) throws IOException {
+    public String upload(@RequestParam("file") @NotNull MultipartFile file, String description, RedirectAttributes redirectAttributes) throws IOException {
         imageService.uploadFile(file, description);
         return "redirect:/";
     }
