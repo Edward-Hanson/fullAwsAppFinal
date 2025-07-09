@@ -6,7 +6,7 @@ on:
       - master
 
 env:
-  IMAGE_TAG: Bad
+  IMAGE_TAG: latest
 
 jobs:
   build-and-push:
